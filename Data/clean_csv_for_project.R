@@ -5,7 +5,7 @@ library(plyr)
 library(gdata)
 
 #set this to your working directory (the one directly above the "Data" folder)
-setwd("C:/SMU/2016 Fall/Doing Data Science/unit 07/Group Project/")
+setwd("C:/SMU/2016 Fall/Doing Data Science/unit 07/Group Project/rollingsales_manhattan/")
 
 #read in the data
 bk <- read.csv("./Data/manhattan.csv",header=TRUE)
@@ -29,6 +29,9 @@ hist(as.numeric(bk$SALE.DATE)) #another way to check it out
 #useless columns?
 unique(bk$BOROUGH) #all the same, delete?
 unique(bk$EASE.MENT) #all the same, delete?
+#uncomment the below two lines to drop the columns above
+#drops <- c("BOROUGH","EASE.MENT")
+#bk[ , !(names(bk) %in% drops)]
 
 #anomalies in the year.built column
 hist(bk$YEAR.BUILT) #about 2500 have 0 as year built, assign average year built?
@@ -44,7 +47,3 @@ names(bk) <- tolower(names(bk))
 
 #at this point bk has specifically typed columns and no rows are omitted
 #the data is ready to be explored/analyzed
-
-#possible plan: create 2-3 (or more) analysis files that slice the data
-#in bk in different ways (first step) and then analyze it, answering 
-#various questions of interest...
