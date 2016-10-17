@@ -29,7 +29,6 @@ hist(as.numeric(bk$SALE.DATE)) #another way to check it out
 #useless columns?
 unique(bk$BOROUGH) #all the same, delete?
 unique(bk$EASE.MENT) #all the same, delete?
-unique(bk$SALE.DATE) #all the same, delete?
 
 #anomalies in the year.built column
 hist(bk$YEAR.BUILT) #about 2500 have 0 as year built, assign average year built?
