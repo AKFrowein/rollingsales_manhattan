@@ -1,0 +1,10 @@
+Based on real esastate research the average price per square foot in Manahattan is approximately 1500.  With this information an esimated outlier cutoff was set for Price per sq feet between 800 and 35000. 
+
+When looking at the remaining 597 observed sales there appears to be a postive corralation between the square footage and the sales price.
+
+Breaking the data down further into nonresidentail and residentail groups, we see that in residentail grouping of sales there is more variance within the observed sales price per square foot.  This could be due to neighborhood or to a buyers percieved value of a home.
+
+There is less variablity within the NonResidentail group and we see a stronger correlation between then the sales price and the square footage.
+
+The choose to remove outliers from the data set was due to the fact and the sever Right skewness of the orginal data set due to missing data points within both the Sales price and Gross Square footage data fields.  
+
