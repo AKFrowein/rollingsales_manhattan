@@ -52,9 +52,25 @@ par(mfrow=c(1,1)) #reset par
 #and seems normal enough so we can use it to make inferences about
 #the mean of the non log-transformed data in gsqft
 qqnorm(log(gsqft$sale.price.n)) #more evidence of the normal-esque distribution
-#so now we can do a one sample t-test and also build the confidence interval
-#on the population mean of all sales in manhattan in this data set with
-#no NA in gross.square.feet AND gross.square.feet > 1 AND no NA in sale.price.n
-#...code to do that here
 
-#ideas: new variable, price per sqft calculated variable,
+#so now we can build the confidence interval on the population median of all sales 
+#in manhattan in this data set with no NA in gross.square.feet AND 
+#gross.square.feet > 1 AND no NA in sale.price.n
+
+#get confidence interval on the population mean
+alpha <- 0.05
+error <- qt(1 - alpha/2,df=length(gsqft$sale.price.n)-1)*sd(log(gsqft$sale.price.n))/sqrt(length(gsqft$sale.price.n))
+left <- mean(log(gsqft$sale.price.n))-error
+right <- mean(log(gsqft$sale.price.n))+error
+#display the CI and a histogram of the data
+hist(log(gsqft$sale.price.n))
+abline(v=left,col='cyan',lwd=2)
+abline(v=right,col='cyan',lwd=2)
+
+#the median of the non-transformed data is in the non-transformed CI
+sprintf('95 percent CI of median = (%.0f, %.0f) \nMedian = %.0f',exp(left),exp(right),median(gsqft$sale.price.n))
+
+#We can say with 95% confidence that the median sales price of the population
+#is between 7,152,420 and 8,481,382
+
+#ideas, create a calculated variable price per sqft
