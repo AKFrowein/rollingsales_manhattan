@@ -56,3 +56,5 @@ qqnorm(log(gsqft$sale.price.n)) #more evidence of the normal-esque distribution
 #on the population mean of all sales in manhattan in this data set with
 #no NA in gross.square.feet AND gross.square.feet > 1 AND no NA in sale.price.n
 #...code to do that here
+
+#ideas: new variable, price per sqft calculated variable,
