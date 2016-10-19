@@ -5,3 +5,14 @@ doing data science project on rolling house sales in manhattan. Below is an exce
 –	A Paper directory containing a file (plain text or Markdown) that explains any meaningful patterns in this dataset.
 
 Testing git status
+
+The RollingSales_Manhattan Repo has the following folders and files:
+Data
+  -rolling_manhattan.exl - Excel file of raw data
+  -manhattan.csv - CSV file of the raw data created from the orginal excel file.
+  -clean_cvs_for_project.txt - R code to beused for cleaning of the data
+  -cleaning_csv_class_example.txt - example of R code from MSDS 6303 session used to help build clean_csv_for_project
+ Analysis
+  -sale_price_by_neighborhood.txt - R code file used in the analysis and of the data
+ Paper
+  -
