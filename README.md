@@ -15,4 +15,5 @@ Data
  Analysis
   -sale_price_by_neighborhood.txt - R code file used in the analysis and of the data
  Paper
-  -
+  -Manhattan_Sales HTML - final paper
+  -Manhattan_Sales.RMD - R markdown file for editing.
