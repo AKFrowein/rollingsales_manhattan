@@ -1,0 +1,177 @@
+---
+title: "Manhattan"
+author: "Michael Murrietta, Anna Frowein, Victor Yim, Frankline Owino"
+date: "October 20, 2016"
+output: html_document
+---
+
+## Data File and Data Clean Up
+
+The raw data of rolling house sales for Manhattan for the project was pulled from http://www1.nyc.gov/home/search/index.page?search-terms=Rolling+sales+update
+We download and resaved the Manhattan file in CVS format in order to pull the data from our working R directory.
+
+
+The following code block was used for the data clean up process.  We performed the following tasks during data clean up:
+
+  -read in the data, removing leading and trailing white spaces correcting:
+      --building.class.category
+  -replaced any non-digit sale.price values with blank for the column to be read      as numeric values
+  -converted dates
+  -removed columns from the data that were blank and not useful
+  -reformatted all column headers to be lowercase
+  -created a new variable of Price per square foot for analysis purposes.
+
+
+```{r setup, include=FALSE}
+library(plyr)
+library(gdata)
+setwd("C:/Users/anna_frowein/Documents/")
+#setwd("H:/mmurrietta/SMU Projects/rollingsales_manhattan/")
+bk <- read.csv("./Data/manhattan.csv",header=TRUE,strip.white = T)
+bk$SALE.PRICE.N <- as.numeric(gsub("[^[:digit:]]","", bk$SALE.PRICE))
+bk$BLOCK <- as.character(bk$BLOCK)
+bk$ZIP.CODE <- as.character(bk$ZIP.CODE)
+bk$ADDRESS <- trim(as.character(bk$ADDRESS))
+bk$LAND.SQUARE.FEET <- as.numeric(bk$LAND.SQUARE.FEET)
+bk$GROSS.SQUARE.FEET <- as.numeric(bk$GROSS.SQUARE.FEET)
+bk$SALE.DATE <- as.Date(bk$SALE.DATE, "%m/%d/%Y")
+drops <- c("BOROUGH","EASE.MENT")
+bk[ , !(names(bk) %in% drops)]
+names(bk) <- tolower(names(bk))
+gsqft <- bk[(is.na(bk$gross.square.feet) == F) & (bk$gross.square.feet > 1) & (is.na(bk$sale.price.n) == F),]
+gsqft$ppsqft <- gsqft$sale.price.n/gsqft$gross.square.feet
+gsqft <- gsqft[((gsqft$sale.price.n > 10) & (gsqft$gross.square.feet != 129)),]
+
+
+```
+
+## Analysis
+
+We started the analysis looking at the distribution of the Sale Price.
+
+```{r Sales Price, echo=FALSE}
+hist(gsqft$sale.price.n)
+```
+
+
+We noticed a heavy right skewness to the data and then applied a natural log to remove the skewness.
+
+```{r, echo=FALSE}
+plot(log(gsqft$gross.square.feet),log(gsqft$sale.price.n))
+```
+
+We noticed two groups in which there appeared to be abnormal data and ran summary analysis on these groupings.
+```{r Manhattan Sales}
+summary(gsqft[(log(gsqft$gross.square.feet) > 4.8) & (log(gsqft$gross.square.feet) < 5.0),'gross.square.feet'])
+summary(gsqft[(log(gsqft$sale.price.n) > 2) & (log(gsqft$sale.price.n) < 3),'sale.price.n'])
+
+```
+
+Based on review of the data in the summary we decided to omit these entries from the data for analysis removing any entries with a sales price of less than 10 and entries with a gross square footage equal to 129.
+```{r, echo=FALSE}
+gsqft <- gsqft[((gsqft$sale.price.n > 10) & (gsqft$gross.square.feet != 129)),]
+```
+
+We then re-plotted the remaining data.
+
+```{r plot, echo=FALSE}
+plot(log(gsqft$gross.square.feet),log(gsqft$sale.price.n))
+abline(v=3.5,col='red',lwd=2)
+abline(v=5.5,col='red',lwd=2)
+```
+
+We separate the new plot into three groupings by setting breaks in the log transformed data at 3.5 and 5.5.  We then looked at plots for each of these groups.
+
+```{r Plots of groups, echo=FALSE}
+lowsf <- gsqft[(log(gsqft$gross.square.feet) < 3.5),]
+midsf <- gsqft[((log(gsqft$gross.square.feet) >= 3.5) & log(gsqft$gross.square.feet) < 5.5),]
+hisf <- gsqft[(log(gsqft$gross.square.feet) >= 5.5),]
+hist(log(lowsf$sale.price.n), main = "Low Sqft. Group")
+abline(v=median(log(lowsf$sale.price.n)),col='red',lwd=2)
+abline(v=mean(log(lowsf$sale.price.n)),col='cyan',lwd=2)
+hist(log(midsf$sale.price.n), main = "Mid Sqft. Group")
+abline(v=median(log(midsf$sale.price.n)),col='red',lwd=2)
+abline(v=mean(log(midsf$sale.price.n)),col='cyan',lwd=2)
+hist(log(hisf$sale.price.n), main = "Hi Sqft. Group")
+abline(v=median(log(hisf$sale.price.n)),col='red',lwd=2)
+abline(v=mean(log(hisf$sale.price.n)),col='cyan',lwd=2)
+hist(log(gsqft$sale.price.n), main = "ALL Sqft. Group")
+abline(v=median(log(gsqft$sale.price.n)),col='red',lwd=2)
+abline(v=mean(log(gsqft$sale.price.n)),col='cyan',lwd=2)
+mtext("Distribution of sale prices by group", outer=TRUE,cex=1.5)
+par(mfrow=c(1,1)) #reset par
+```
+
+We noticed that All group has a median and mean log sales price relatively close to each and the data seems to be normally distributed.
+
+Next we looked the qqplot further check for normality in the data and found that the log transformed data was approximately normal.  Using this information we can set a confidence interval for the data and then transform this back to determine the Population median sales price for Manhattan will be between $7,152,420 and $8,481,382.
+
+Next we looked at the at Price per Square foot metric that we created.  Looking at average price per square foot for Manhattan on the Internet we found the average price per square foot in Manhattan was approximately $1,400-$1,600, we then set bounds to the data lines we would analysis to only those with a price per square foot between $800 and $35,000.  From here we separated the data into Residential and Commercial Sales, with the assumption that the type of property would affect sales price since buyers would look for different things in each of these markets.  Below please find the scatter plots of the Sales price by square foot for each of these market groupings.
+
+```{r Res and Comm, echo=FALSE}
+res.list <- c("01  ONE FAMILY DWELLINGS",
+"02  TWO FAMILY DWELLINGS",
+"03  THREE FAMILY DWELLINGS",
+"07  RENTALS - WALKUP APARTMENTS",
+"08  RENTALS - ELEVATOR APARTMENTS",
+"09  COOPS - WALKUP APARTMENTS",
+"13  CONDOS - ELEVATOR APARTMENTS",
+"14  RENTALS - 4-10 UNIT",
+"23  LOFT BUILDINGS")
+res.prop <- gsqft[gsqft$building.class.category %in% res.list,]
+com.list <- c("21  OFFICE BUILDINGS",
+"22  STORE BUILDINGS",
+"25  LUXURY HOTELS",
+"26  OTHER HOTELS",
+"29  COMMERCIAL GARAGES",
+"30  WAREHOUSES",
+"31  COMMERCIAL VACANT LAND",
+"32  HOSPITAL AND HEALTH FACILITIES",
+"33  EDUCATIONAL FACILITIES",
+"34  THEATRES",
+"37  RELIGIOUS FACILITIES",
+"41  TAX CLASS 4 - OTHER")
+com.prop <- gsqft[gsqft$building.class.category %in% com.list,]
+res.prop <- res.prop[(res.prop$ppsqft > 800) & (res.prop$ppsqft < 35000),]
+com.prop <- com.prop[(com.prop$ppsqft > 800) & (com.prop$ppsqft < 35000),]
+par(mfrow=c(1,2), oma = c(0, 0, 2, 0))
+plot(res.prop$gross.square.feet,res.prop$sale.price.n)
+res.model <- lm(res.prop$sale.price.n ~ res.prop$gross.square.feet)
+abline(coef(res.model)[1],coef(res.model)[2],col="red",lwd=2)
+plot(com.prop$gross.square.feet,com.prop$sale.price.n)
+com.model <- lm(com.prop$sale.price.n ~ com.prop$gross.square.feet)
+abline(coef(com.model)[1],coef(com.model)[2],col="red",lwd=2)
+mtext("Fit lines for Residential and Commercial Sales", outer=TRUE,cex=1.5)
+par(mfrow=c(1,1)) #reset par
+```
+
+Based on the red fit lines in the data we determined that there was a weak correlation between Sales price and square footage for both markets. There is variability in the model that is not accounted for by just Square footage.  We ran the correlation coefficients and found that for the Commercial Sales had stronger correlation with a Pearson's r of .43 than the Residential Sales, which had a Pearson's r of .36.
+
+We then started to review the data based on the Neighborhoods in Manhattan.
+In particular we noticed four neighborhoods with stronger trends than others.
+As shown by the plots below we noticed:
+Chinatown we noticed had a negative, even though it was weak, correlation between sales price and square footage.
+The Civic Center, Morningside Heights and Washington Heights Upper Neighborhoods all seemed to had the strongest correlation between sales price and square footage with Pearson's r's of .86, .99 and .70 respectfully.
+
+```{r Neighborhood, echo=FALSE}
+cnt <-count(gsqft,"neighborhood")
+
+for (x in cnt$neighborhood){
+tmp <- gsqft[gsqft$neighborhood == x,]
+tmp.model <- lm(tmp$sale.price.n ~ tmp$gross.square.feet)
+rval <- with(tmp,cor(gross.square.feet,sale.price.n))
+if((dim(tmp)[1] > 2) | (x == 'CHINATOWN')){
+if((abs(rval) > 0.6) | (x == 'CHINATOWN')){
+paste(x,", r-value: ", round(rval,3),sep=" ")
+plot(tmp$gross.square.feet,tmp$sale.price.n,
+main=sprintf("Neighborhood: %s\nr = %.2f",x,rval))
+abline(coef(tmp.model)[1],coef(tmp.model)[2],col="red",lwd=2)
+}
+}
+}
+
+```
+
+##Conculsions
+
+Overall we noticed that there was a lot a variability within the data when comparing Sales price to Square footage.  We did determine that square footage can have some affect on the sales price in Manhattan, especially in certain neighborhoods.
